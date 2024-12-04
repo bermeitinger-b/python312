@@ -38,6 +38,8 @@ build() {
   cd "${srcdir}/Python-${pkgver}"
 
   CFLAGS="${CFLAGS} -fno-semantic-interposition -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+  CFLAGS="${CFLAGS/-O2/-O3} -ffat-lto-objects"
+  CFLAGS="${CFLAGS} -march=znver4 -mtune=znver4"
   ./configure ax_cv_c_float_words_bigendian=no \
               --prefix=/usr \
               --enable-shared \
