@@ -12,7 +12,7 @@ arch=('i686' 'x86_64')
 license=('PSF-2.0')
 url="https://www.python.org/"
 depends=('bzip2' 'expat' 'gdbm' 'libffi' 'libnsl' 'libxcrypt' 'openssl' 'zlib')
-makedepends=('bluez-libs' 'mpdecimal' 'gdb' 'tk')
+makedepends=('boost-libs' 'mpdecimal' 'gdb' 'tk')
 optdepends=('sqlite' 'mpdecimal: for decimal' 'xz: for lzma' 'tk: for tkinter')
 source=(https://www.python.org/ftp/python/${pkgver}/Python-${pkgver}.tar.xz)
 sha256sums=('c909157bb25ec114e5869124cc2a9c4a4d4c1e957ca4ff553f1edc692101154e')
@@ -31,6 +31,8 @@ prepare() {
   # rather than copies shipped in the tarball
   rm -rf Modules/expat
   rm -rf Modules/_decimal/libmpdec
+  rm -rf Modules/_ctypes/{darwin,libffi}*
+  rm -rf Modules/_decimal/libmpdec
 }
 
 build() {
@@ -47,10 +49,12 @@ build() {
               --enable-ipv6 \
               --with-system-expat \
               --with-dbmliborder=gdbm:ndbm \
+              --with-system-ffi \
               --with-system-libmpdec \
               --enable-loadable-sqlite-extensions \
               --without-ensurepip \
-              --with-tzpath=/usr/share/zoneinfo
+              --with-tzpath=/usr/share/zoneinfo \
+              --enable-optimizations
 
   make EXTRA_CFLAGS="$CFLAGS"
 }
