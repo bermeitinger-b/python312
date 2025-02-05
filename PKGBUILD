@@ -12,7 +12,7 @@ arch=('i686' 'x86_64')
 license=('PSF-2.0')
 url="https://www.python.org/"
 depends=('bzip2' 'expat' 'gdbm' 'libffi' 'libnsl' 'libxcrypt' 'openssl' 'zlib')
-makedepends=('boost-libs' 'mpdecimal' 'gdb' 'tk')
+makedepends=('bluez-libs' 'mpdecimal' 'gdb' 'tk')
 optdepends=('sqlite' 'mpdecimal: for decimal' 'xz: for lzma' 'tk: for tkinter')
 source=(https://www.python.org/ftp/python/${pkgver}/Python-${pkgver}.tar.xz)
 sha256sums=('7220835d9f90b37c006e9842a8dff4580aaca4318674f947302b8d28f3f81112')
@@ -30,8 +30,6 @@ prepare() {
   # Ensure that we are using the system copy of various libraries (expat, zlib and libffi),
   # rather than copies shipped in the tarball
   rm -rf Modules/expat
-  rm -rf Modules/_decimal/libmpdec
-  rm -rf Modules/_ctypes/{darwin,libffi}*
   rm -rf Modules/_decimal/libmpdec
 }
 
