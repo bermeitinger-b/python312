@@ -2,27 +2,57 @@
 # Contributor: Tobias Kunze <r@rixx.de>
 # Maintained at https://github.com/rixx/pkgbuilds, feel free to submit patches
 
+shopt -s extglob
+
 pkgname=python312
 pkgver=3.12.11
 pkgrel=1
-_pybasever=3.12
-_pymajver=3
-pkgdesc="Major release 3.12 of the Python high-level programming language"
-arch=('i686' 'x86_64')
+_pybasever=${pkgver%.*}
+_pymajver=${_pybasever%.*}
+pkgdesc="The Python programming language (3.12)"
+arch=('x86_64')
 license=('PSF-2.0')
 url="https://www.python.org/"
-depends=('bzip2' 'expat' 'gdbm' 'libffi' 'libnsl' 'libxcrypt' 'openssl' 'zlib')
-makedepends=('bluez-libs' 'mpdecimal' 'gdb' 'tk')
-optdepends=('sqlite' 'mpdecimal: for decimal' 'xz: for lzma' 'tk: for tkinter')
-source=(https://www.python.org/ftp/python/${pkgver}/Python-${pkgver}.tar.xz)
-sha256sums=('c30bb24b7f1e9a19b11b55a546434f74e739bb4c271a3e3a80ff4380d49f7adb')
-validpgpkeys=(
-    '0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D'  # Ned Deily (Python release signing key) <nad@python.org>
-    'E3FF2839C048B25C084DEBE9B26995E310250568'  # Łukasz Langa (GPG langa.pl) <lukasz@langa.pl>
+depends=(
+  'bzip2'
+  'expat'
+  'gdbm'
+  'libffi'
+  'libnsl'
+  'libxcrypt'
+  'openssl'
+  'zlib'
+  'tzdata'
+  'mpdecimal'
 )
+makedepends=(
+  'bluez-libs'
+  'cosign'
+  'gdb'
+  'llvm'
+  'llvm-bolt'
+  'mpdecimal'
+  'sqlite'
+  'tk'
+)
+source=(
+  "https://www.python.org/ftp/python/${pkgver%rc*}/Python-${pkgver}.tar.xz"{,.sigstore}
+  EXTERNALLY-MANAGED)
+md5sums=('9613d56b90d0d0cfd19980c7e2956a06'
+         '85ab669635ea9257c139232b6db7c4c0'
+         '7d2680a8ab9c9fa233deb71378d5a654')
+
+verify() {
+  cosign verify-blob \
+    --new-bundle-format \
+    --certificate-oidc-issuer 'https://accounts.google.com' \
+    --certificate-identity 'thomas@python.org' \
+    --bundle ./Python-${pkgver}.tar.xz.sigstore \
+    ./Python-${pkgver}.tar.xz
+}
 
 prepare() {
-  cd "${srcdir}/Python-${pkgver}"
+  cd "${srcdir}/Python-${pkgver}" || exit
 
   # FS#23997
   sed -i -e "s|^#.* /usr/local/bin/python|#!/usr/bin/python|" Lib/cgi.py
@@ -34,31 +64,36 @@ prepare() {
 }
 
 build() {
-  cd "${srcdir}/Python-${pkgver}"
+  cd "${srcdir}/Python-${pkgver}" || exit
 
-  CFLAGS="${CFLAGS} -fno-semantic-interposition -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+  # PGO should be done with -O3
   CFLAGS="${CFLAGS/-O2/-O3} -ffat-lto-objects"
-  ./configure ax_cv_c_float_words_bigendian=no \
-              --prefix=/usr \
-              --enable-shared \
-              --with-computed-gotos \
-              --enable-optimizations \
-              --with-lto \
-              --enable-ipv6 \
-              --with-system-expat \
-              --with-dbmliborder=gdbm:ndbm \
-              --with-system-ffi \
-              --with-system-libmpdec \
-              --enable-loadable-sqlite-extensions \
-              --without-ensurepip \
-              --with-tzpath=/usr/share/zoneinfo \
-              --enable-optimizations
+
+  export CFLAGS+=" -fno-semantic-interposition -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+  export CXXLAGS+=" -fno-semantic-interposition -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer"
+
+  # Disable bundled pip & setuptools
+  # BOLT is disabled due LLVM or upstream issue
+  # https://github.com/python/cpython/issues/124948
+  ./configure \
+    --prefix=/usr \
+    --enable-shared \
+    --with-computed-gotos \
+    --with-lto \
+    --enable-ipv6 \
+    --with-system-expat \
+    --with-dbmliborder=gdbm:ndbm \
+    --with-system-libmpdec \
+    --enable-loadable-sqlite-extensions \
+    --without-ensurepip \
+    --with-tzpath=/usr/share/zoneinfo \
+    --enable-optimizations
 
   make EXTRA_CFLAGS="$CFLAGS"
 }
 
 package() {
-  cd "${srcdir}/Python-${pkgver}"
+  cd "${srcdir}/Python-${pkgver}" || exit 1
   # altinstall: /usr/bin/pythonX.Y but not /usr/bin/python or /usr/bin/pythonX
   make DESTDIR="${pkgdir}" altinstall maninstall
 
@@ -73,9 +108,9 @@ package() {
   sed -i "s|$srcdir/Python-${pkgver}:||" "$pkgdir/usr/lib/python${_pybasever}/config-${_pybasever}-${CARCH}-linux-gnu/Makefile"
 
   # Add useful scripts FS#46146
-  install -dm755 "${pkgdir}"/usr/lib/python${_pybasever}/Tools/{i18n,scripts}
-  install -m755 Tools/i18n/{msgfmt,pygettext}.py "${pkgdir}"/usr/lib/python${_pybasever}/Tools/i18n/
-  install -m755 Tools/scripts/{README,*py} "${pkgdir}"/usr/lib/python${_pybasever}/Tools/scripts/
+  install -dm755 "${pkgdir}"/usr/lib/python"${_pybasever}"/Tools/{i18n,scripts}
+  install -m755 Tools/i18n/{msgfmt,pygettext}.py "${pkgdir}"/usr/lib/python"${_pybasever}"/Tools/i18n/
+  install -m755 Tools/scripts/{README,*py} "${pkgdir}"/usr/lib/python"${_pybasever}"/Tools/scripts/
 
   # License
   install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
