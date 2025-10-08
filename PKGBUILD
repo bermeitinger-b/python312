@@ -6,7 +6,7 @@ shopt -s extglob
 
 pkgname=python312
 pkgver=3.12.11
-pkgrel=1
+pkgrel=2
 _pybasever=${pkgver%.*}
 _pymajver=${_pybasever%.*}
 pkgdesc="The Python programming language (3.12)"
@@ -77,17 +77,17 @@ build() {
   # https://github.com/python/cpython/issues/124948
   ./configure \
     --prefix=/usr \
+    --enable-ipv6 \
+    --enable-loadable-sqlite-extensions \
+    --enable-optimizations \
     --enable-shared \
     --with-computed-gotos \
-    --with-lto \
-    --enable-ipv6 \
-    --with-system-expat \
     --with-dbmliborder=gdbm:ndbm \
+    --with-lto \
+    --with-system-expat \
     --with-system-libmpdec \
-    --enable-loadable-sqlite-extensions \
-    --without-ensurepip \
     --with-tzpath=/usr/share/zoneinfo \
-    --enable-optimizations
+    --without-ensurepip
 
   make EXTRA_CFLAGS="$CFLAGS"
 }
@@ -111,6 +111,10 @@ package() {
   install -dm755 "${pkgdir}"/usr/lib/python"${_pybasever}"/Tools/{i18n,scripts}
   install -m755 Tools/i18n/{msgfmt,pygettext}.py "${pkgdir}"/usr/lib/python"${_pybasever}"/Tools/i18n/
   install -m755 Tools/scripts/{README,*py} "${pkgdir}"/usr/lib/python"${_pybasever}"/Tools/scripts/
+
+  # PEP668
+  install -Dm644 "${srcdir}/EXTERNALLY-MANAGED" -t "${pkgdir}/usr/lib/python${_pybasever}/"
+
 
   # License
   install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
