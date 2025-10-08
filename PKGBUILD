@@ -94,6 +94,7 @@ build() {
 
 package() {
   cd "${srcdir}/Python-${pkgver}" || exit 1
+ 
   # altinstall: /usr/bin/pythonX.Y but not /usr/bin/python or /usr/bin/pythonX
   make DESTDIR="${pkgdir}" altinstall maninstall
 
@@ -114,7 +115,6 @@ package() {
 
   # PEP668
   install -Dm644 "${srcdir}/EXTERNALLY-MANAGED" -t "${pkgdir}/usr/lib/python${_pybasever}/"
-
 
   # License
   install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
