@@ -1,7 +1,7 @@
 pkgbase = python312
 	pkgdesc = The Python programming language (3.12)
-	pkgver = 3.12.11
-	pkgrel = 2
+	pkgver = 3.12.12
+	pkgrel = 1
 	url = https://www.python.org/
 	arch = x86_64
 	license = PSF-2.0
@@ -23,11 +23,11 @@ pkgbase = python312
 	depends = zlib
 	depends = tzdata
 	depends = mpdecimal
-	source = https://www.python.org/ftp/python/3.12.11/Python-3.12.11.tar.xz
-	source = https://www.python.org/ftp/python/3.12.11/Python-3.12.11.tar.xz.sigstore
+	source = https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz
+	source = https://www.python.org/ftp/python/3.12.12/Python-3.12.12.tar.xz.sigstore
 	source = EXTERNALLY-MANAGED
-	md5sums = 9613d56b90d0d0cfd19980c7e2956a06
-	md5sums = 85ab669635ea9257c139232b6db7c4c0
+	md5sums = 04feb01316c7bb1b448001adbc63dd23
+	md5sums = 384e741a870e13352cb7b5eb02a62f28
 	md5sums = 7d2680a8ab9c9fa233deb71378d5a654
 
 pkgname = python312

@@ -5,8 +5,8 @@
 shopt -s extglob
 
 pkgname=python312
-pkgver=3.12.11
-pkgrel=2
+pkgver=3.12.12
+pkgrel=1
 _pybasever=${pkgver%.*}
 _pymajver=${_pybasever%.*}
 pkgdesc="The Python programming language (3.12)"
@@ -38,8 +38,8 @@ makedepends=(
 source=(
   "https://www.python.org/ftp/python/${pkgver%rc*}/Python-${pkgver}.tar.xz"{,.sigstore}
   EXTERNALLY-MANAGED)
-md5sums=('9613d56b90d0d0cfd19980c7e2956a06'
-         '85ab669635ea9257c139232b6db7c4c0'
+md5sums=('04feb01316c7bb1b448001adbc63dd23'
+         '384e741a870e13352cb7b5eb02a62f28'
          '7d2680a8ab9c9fa233deb71378d5a654')
 
 verify() {
